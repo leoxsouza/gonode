@@ -1,5 +1,6 @@
 const Ad = require('../models/Ad')
 const User = require('../models/User')
+const Purchase = require('../models/Purchase')
 const PurchaseMail = require('../jobs/PurchaseMail')
 const Queue = require('../services/Queue')
 
@@ -16,7 +17,22 @@ class PurchaseController {
       content
     }).save()
 
-    return res.send()
+    const purchase = await Purchase.create({ ...req.body, client: req.userId })
+
+    return res.json(purchase)
+  }
+
+  async update (req, res) {
+    const purchaseAd = await Purchase.findById(req.params.id)
+    const purchasedBy = req.params.id
+    const adF = await Ad.findById(purchaseAd.ad)
+    adF.purchasedBy = purchasedBy
+
+    const ad = await Ad.findByIdAndUpdate(purchaseAd.ad, adF, {
+      new: true
+    })
+
+    return res.json(ad)
   }
 }
 
